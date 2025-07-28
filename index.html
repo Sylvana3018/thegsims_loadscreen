@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>My GMod Server Loading</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      /* Используем вашу loadscreen.jpg как фоновое изображение */
+      background: url('loadscreen.jpg') center/cover no-repeat fixed;
+    }
+    /* Полупрозрачный оверлей для контраста текста */
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    #container {
+      position: relative;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+      padding: 0 20px;
+      text-align: center;
+    }
+    /* Если loadscreen.jpg — это логотип, раскомментируйте блок ниже
+    #logo {
+      max-width: 250px;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out;
+    }
+    */
+    #progress-bar {
+      width: 80%; max-width: 600px;
+      height: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+      margin-bottom: 15px;
+      animation: fadeIn 1s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00ffa3, #00c3ff);
+      transition: width 0.2s ease;
+    }
+    #status {
+      font-size: 1rem;
+      opacity: 0;
+      min-height: 1.2em;
+      animation: fadeIn 1s ease-out 0.7s forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div id="container">
+    <!-- Если loadscreen.jpg — это логотип, вместо элемента overlay выше
+         раскомментируйте и замените на -->
+    <!-- <img id="logo" src="loadscreen.jpg" alt="Server Logo"> -->
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <div id="status">Ожидание данных от сервера...</div>
+  </div>
+
+  <script>
+    const fill = document.getElementById('progress-fill');
+    const status = document.getElementById('status');
+
+    window.SetDisplayPercentage = pct => {
+      pct = Math.max(0, Math.min(100, pct));
+      fill.style.width = pct + '%';
+    };
+
+    window.SetStatusChanged = text => {
+      status.textContent = text;
+    };
+
+    setTimeout(() => {
+      if (fill.style.width === '0%') {
+        status.textContent = 'Идёт загрузка, пожалуйста, подождите…';
+      }
+    }, 10000);
+  </script>
+</body>
+</html>
