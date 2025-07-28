@@ -5,49 +5,58 @@
   <title>Loading | My GMod Server</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Подключаем шрифт из Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500&display=swap');
+    /* Подключаем Manrope с нужными весами */
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;800&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      font-family: 'Montserrat', sans-serif;
-      /* Фон: тонкий тёмный градиент */
-      background: linear-gradient(135deg, #111111, #1e1e1e);
-      color: #fff;
-    }
-    /* Оверлей, если нужен — раскомментируйте и замените background на картинку
-    body {
+      font-family: 'Manrope', sans-serif;
+      position: relative;
       background: url('loadscreen.jpg') center/cover no-repeat fixed;
     }
     #overlay {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.7);
       z-index: 0;
     }
-    */
 
     #container {
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       width: 100%; height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 0 20px;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center; padding: 0 20px;
+      opacity: 0; animation: fadeIn 1s ease-out forwards;
     }
-    /* Логотип становится белым фильтром */
+
+    /* Логотип — интенсивный пульс */
     #logo {
       width: 180px;
       filter: invert(1) brightness(2);
       opacity: 0.9;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+      transform-origin: center;
     }
-    /* Тонкая полоса прогресса */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.12); }
+    }
+
+    /* Заголовок — ExtraBold */
+    #title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 40px;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+    #title .g { color: #00c3ff; }
+
+    /* Прогресс-бар */
     #progress-bar {
       width: 60%; max-width: 500px;
       height: 4px;
@@ -57,50 +66,92 @@
       margin-bottom: 20px;
     }
     #progress-fill {
-      width: 0%;
-      height: 100%;
+      width: 0%; height: 100%;
       background: #00c3ff;
       transition: width 0.2s ease;
     }
-    /* Статус чуть тоньше и менее навязчив */
+
+    /* Статус загрузки */
     #status {
-      font-size: 0.9rem;
+      font-size: 0.9rem; font-weight: 300;
+      opacity: 0.8; min-height: 1.4em;
+      color: #fff; margin-bottom: 30px;
+    }
+
+    /* Анимированные подсказки — ещё крупнее */
+    #tips {
+      position: absolute;
+      bottom: 50px; /* выше версии */
+      width: 100%;
+      text-align: center;
+      font-size: 1.3rem;      /* ещё больше */
       font-weight: 300;
+      color: #ddd;
       opacity: 0.8;
-      min-height: 1.4em;
+      min-height: 1.6em;
+      transition: opacity 0.8s ease;
+      z-index: 1;
     }
-    /* Плавное появление контейнера */
-    #container { opacity: 0; animation: fadeIn 1s ease-out forwards; }
-    @keyframes fadeIn {
-      to { opacity: 1; }
+
+    /* Версия */
+    #version {
+      position: absolute; bottom: 15px;
+      width: 100%; text-align: center;
+      font-size: 0.75rem; opacity: 0.5;
+      font-weight: 300; color: #fff;
+      z-index: 1;
     }
+
+    @keyframes fadeIn { to { opacity: 1; } }
   </style>
 </head>
 <body>
-  <!-- Для фонового изображения -->
-  <!-- <div id="overlay"></div> -->
+  <div id="overlay"></div>
 
   <div id="container">
     <img id="logo" src="logo.png" alt="Server Logo">
+    <div id="title">The <span class="g">g</span>Sims</div>
     <div id="progress-bar"><div id="progress-fill"></div></div>
     <div id="status">Ожидание данных от сервера…</div>
   </div>
 
+  <div id="tips"></div>
+  <div id="version">alpha ver. 0.8.2</div>
+
   <script>
-    const fill = document.getElementById('progress-fill');
+    const fill   = document.getElementById('progress-fill');
     const status = document.getElementById('status');
+    const tips   = document.getElementById('tips');
 
-    // Вызывается движком GMod
+    // GMod вызывает эти функции
     window.SetDisplayPercentage = pct => {
-      const clamped = Math.max(0, Math.min(100, pct));
-      fill.style.width = clamped + '%';
+      const v = Math.max(0, Math.min(100, pct));
+      fill.style.width = v + '%';
     };
+    window.SetStatusChanged = txt => { status.textContent = txt; };
 
-    window.SetStatusChanged = text => {
-      status.textContent = text;
-    };
+    // Список подсказок
+    const hints = [
+      'А вы знали, что мебель сохранится в ваших апартаментах даже если вы выйдете с сервера?',
+      'Развивайте собственный бизнес - от интерьера до популярности',
+      'Более 80% механик мы сделали с нуля специально для The gSims',
+      'А вы знали, что можете обустраивать интерьер в специальном режиме Дизайнера?',
+      'Ежемесячные крупные обновления с целыми наборами нового контента',
+      'Мы считаем себя духовными наследниками БизнесРП'
+    ];
+    let idx = 0;
+    function showTip() {
+      tips.style.opacity = 0;
+      setTimeout(() => {
+        tips.textContent = hints[idx];
+        tips.style.opacity = 0.8;
+        idx = (idx + 1) % hints.length;
+      }, 800);
+    }
+    showTip();
+    setInterval(showTip, 8000);
 
-    // Резервное сообщение, если прогресс не стартовал
+    // Резервное сообщение
     setTimeout(() => {
       if (fill.style.width === '0%') {
         status.textContent = 'Идёт загрузка, пожалуйста, подождите…';
