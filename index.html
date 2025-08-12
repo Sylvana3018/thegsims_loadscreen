@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <title>Loading | The gSims</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Чёткая, нейтральная гарнитура -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg-1:#0cc7ff;       /* бирюза */
-      --bg-2:#1565d8;       /* синий */
-      --plumbob-1:#42ff6b;  /* верх пламбоба */
-      --plumbob-2:#00c853;  /* низ пламбоба */
+      --bg-1:#0cc7ff;
+      --bg-2:#1565d8;
+      --plumbob-1:#42ff6b;
+      --plumbob-2:#00c853;
       --ring-track:rgba(255,255,255,0.18);
       --ring-fill-1:#b7ffcc;
       --ring-fill-2:#66ff8b;
@@ -30,7 +29,6 @@
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Тонкий блюр фоновой картинки под градиентом (опционально) */
     #bg-photo{
       position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.12;
       background:url('loadscreen.jpg') center/cover no-repeat fixed;
@@ -38,7 +36,6 @@
       transform: scale(1.03);
     }
 
-    /* Спокойные статичные кольца — вместо “скользящих” лучей */
     #bg-halo{
       position:fixed; inset:0; z-index:1; pointer-events:none;
       display:grid; place-items:center; opacity:.35;
@@ -48,12 +45,8 @@
     #bg-halo .c2{ stroke:rgba(255,255,255,.10); stroke-width:2; filter:url(#blur30) }
     #bg-halo .c3{ stroke:rgba(255,255,255,.07); stroke-width:2; filter:url(#blur40) }
 
-    /* Канвас с лёгкими искрами */
-    #sparkles{
-      position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.6;
-    }
+    #sparkles{ position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.6; }
 
-    /* Контейнер контента */
     #wrap{
       position:relative; z-index:3;
       height:100%; width:100%;
@@ -62,7 +55,6 @@
       text-align:center;
     }
 
-    /* Заголовок — без бегущего блика */
     h1#title{
       font-weight:800; letter-spacing:.02em; font-size:min(8vw,54px);
       text-transform:none; margin-top:18px;
@@ -70,19 +62,17 @@
     }
     h1#title .g{ color:#9fffb3 }
 
-    /* Блок пламбоба и кольца прогресса */
+    /* Герой-блок с фиксированным внутренним полем под кольцо и пламбоб */
     .hero{
       position:relative;
       display:grid;
       place-items:center;
-      width:min(56vmin, 380px);
+      width: clamp(240px, 52vmin, 360px);   /* аккуратнее на маленьких экранах */
       aspect-ratio:1/1;
-      filter: drop-shadow(0 30px 50px rgba(0,0,0,.45));
       animation: heroIn .9s ease both;
     }
     @keyframes heroIn{ from{ transform: translateY(12px); opacity:0 } to{ transform:none; opacity:1 } }
 
-    /* SVG-кольцо */
     .ring{ position:absolute; inset:0; }
     .ring svg{ width:100%; height:100% }
     .ring .track{
@@ -95,27 +85,26 @@
       transform: rotate(-90deg);
       transform-origin:50% 50%;
       transition: stroke-dashoffset .2s ease;
-      filter: drop-shadow(0 0 22px rgba(98,255,140,.45));
+      filter: drop-shadow(0 0 18px rgba(98,255,140,.35));
     }
 
-    /* Пламбоб */
+    /* Пламбоб — меньше, строго центр, БЕЗ тени */
     .plumbob{
-      width:48%; aspect-ratio: 1/1; z-index:1; position:relative;
-      animation: bob 2.8s ease-in-out infinite, spin 12s linear infinite;
-      filter: drop-shadow(0 14px 24px rgba(0,0,0,.35))
-              drop-shadow(0 0 20px rgba(106,255,140,.35));
+      width: clamp(90px, 36%, 150px);  /* был 48% — теперь компактно и не «лезет» за кольцо */
+      aspect-ratio: 1/1;
+      z-index:1;
+      position:relative;
+      /* центрирование обеспечивает grid, дополнительного translate нет */
+      /* лёгкое покачивание, чтобы оставался «живым», но очень маленькой амплитуды */
+      animation: bob 3.2s ease-in-out infinite;
+      filter: none; /* тень удалена */
       will-change: transform;
     }
     @keyframes bob{
-      0%,100%{ transform: translateY(-4%) }
-      50%{ transform: translateY(4%) }
-    }
-    @keyframes spin{
-      0%{ transform: rotateY(0deg) }
-      100%{ transform: rotateY(360deg) }
+      0%,100%{ transform: translateY(-2%) }
+      50%{ transform: translateY(2%) }
     }
 
-    /* Процент и статус */
     #percent{
       margin-top:16px; font-weight:600; letter-spacing:.06em;
       font-size: clamp(12px, 1.6vw, 14px);
@@ -127,7 +116,6 @@
       opacity:.9; min-height:1.5em;
     }
 
-    /* Подсказки */
     #tips{
       position:fixed; left:0; right:0; bottom:64px;
       text-align:center;
@@ -139,13 +127,11 @@
       text-shadow: 0 2px 10px rgba(0,0,0,.25);
     }
 
-    /* Версия */
     #version{
       position:fixed; bottom:20px; left:0; right:0;
       text-align:center; font-size:12px; opacity:.6; z-index:3;
     }
 
-    /* Кнопка звука */
     #audioBtn{
       position:fixed; top:18px; right:18px; z-index:4;
       width:42px; height:42px; border-radius:12px;
@@ -157,7 +143,6 @@
     }
     #audioBtn:hover{ transform: translateY(-1px) scale(1.03); background: rgba(255,255,255,.18) }
 
-    /* Экран “Готово” при 100% */
     #ready{
       position:fixed; inset:0; display:none; place-items:center; z-index:5;
       background: radial-gradient(60% 40% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.35));
@@ -168,23 +153,18 @@
     }
     @keyframes readyIn{ from{ opacity:0 } to{ opacity:1 } }
 
-    /* Сниженное движение — бережём FPS/доступность */
     @media (prefers-reduced-motion: reduce){
-      .plumbob{ animation: none }
-      .hero{ animation: none }
+      .plumbob, .hero{ animation: none }
     }
-
-    /* Небольшая адаптация */
     @media (max-height:640px){
       #wrap{ padding-bottom: 20vh }
-      .plumbob{ width:44% }
+      .plumbob{ width: clamp(82px, 34%, 130px) } /* ещё компактнее на очень узких дисплеях */
     }
   </style>
 </head>
 <body>
   <div id="bg-photo" aria-hidden="true"></div>
 
-  <!-- Статичные кольца-ореолы -->
   <div id="bg-halo" aria-hidden="true">
     <svg viewBox="0 0 800 800" role="img" aria-label="Halo rings">
       <defs>
@@ -200,7 +180,6 @@
 
   <canvas id="sparkles" aria-hidden="true"></canvas>
 
-  <!-- Опциональная музыка: положи рядом music.mp3 -->
   <audio id="music" src="music.mp3" preload="none" loop></audio>
   <button id="audioBtn" title="Музыка">
     <svg id="icon-sound" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -212,9 +191,8 @@
 
   <div id="wrap" role="main">
     <div class="hero" aria-hidden="true">
-      <!-- Кольцо прогресса -->
       <div class="ring">
-        <svg viewBox="0 0 240 240">
+        <svg id="ringSvg" viewBox="0 0 240 240">
           <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stop-color="var(--ring-fill-1)"/>
@@ -227,7 +205,7 @@
         </svg>
       </div>
 
-      <!-- Пламбоб -->
+      <!-- Пламбоб — центр, без тени -->
       <svg class="plumbob" viewBox="0 0 100 140" role="img" aria-label="gSims Plumbob">
         <polygon points="50,0 90,60 50,120 10,60" fill="url(#p-grad)"/>
         <polygon points="50,10 80,60 50,110 20,60" fill="url(#p-grad2)" opacity=".65"/>
@@ -251,156 +229,46 @@
   </div>
 
   <div id="tips"></div>
-  <div id="version">alpha ver. 0.8.2 • gSims | Nyx Project</div>
+  <div id="version">alpha ver. 0.8.2 • © gSims</div>
 
   <div id="ready">ГОТОВО!</div>
 
   <script>
     /* ====== DOM ====== */
     const ring = document.getElementById('ringProgress');
+    const ringSvg = document.getElementById('ringSvg');
     const percentEl = document.getElementById('percent');
     const statusEl  = document.getElementById('status');
     const tipsEl    = document.getElementById('tips');
     const readyEl   = document.getElementById('ready');
 
-    /* ====== Прогресс-кольцо ====== */
-    const R = 96;
-    const CIRC = 2 * Math.PI * R;
+    /* ====== Геометрия кольца — считаем из реального r, без магических чисел ====== */
+    const r = parseFloat(ring.getAttribute('r'));
+    const CIRC = 2 * Math.PI * r;
     ring.setAttribute('stroke-dasharray', CIRC.toFixed(2));
     ring.setAttribute('stroke-dashoffset', CIRC.toFixed(2));
 
+    /* ====== Универсальная нормализация процента ====== */
+    function normalizePct(p){
+      if (p == null) return 0;
+      if (typeof p === 'string'){
+        const num = parseFloat(p.replace('%','').trim());
+        if (isNaN(num)) return 0;
+        // если строка содержала %, считаем уже 0..100
+        if (p.includes('%')) return num;
+        return num <= 1 ? num*100 : num;
+      }
+      if (typeof p === 'number'){
+        return p <= 1 ? p*100 : p;
+      }
+      return 0;
+    }
+
     function setProgress(p){
-      const v = Math.max(0, Math.min(100, p|0));
+      const v = Math.max(0, Math.min(100, Math.round(normalizePct(p))));
       const offset = CIRC * (1 - v/100);
       ring.style.strokeDashoffset = offset.toFixed(2);
       percentEl.textContent = v + '%';
+      document.title = `Loading | The gSims (${v}%)`;
       if (v >= 100) readyEl.style.display = 'grid';
-      else if (readyEl.style.display !== 'none') readyEl.style.display = 'none';
-    }
-
-    /* ====== Хуки GMod (имена не меняем) ====== */
-    window.SetDisplayPercentage = function(pct){
-      setProgress(pct);
-    };
-    window.SetStatusChanged = function(txt){
-      statusEl.textContent = txt || '';
-    };
-
-    /* ====== Подсказки ====== */
-    const hints = [
-      'Совет: мебель в ваших апартаментах сохраняется даже после выхода.',
-      'Подсказка: развивайте собственный бизнес — от интерьера до популярности.',
-      'Факт: более 80% механик сделаны вручную специально для The gSims.',
-      'Знаете ли вы? Есть режим Дизайнера для продвинутого обустройства.',
-      'Каждый месяц — крупные обновления с наборами нового контента.',
-      'Мы — духовные наследники БизнесРП. Присоединяйтесь к сообществу!'
-    ];
-    let tipIndex = 0;
-    function cycleTip(){
-      tipsEl.style.opacity = 0;
-      tipsEl.style.transform = 'translateY(6px)';
-      setTimeout(()=>{
-        tipsEl.textContent = hints[tipIndex];
-        tipsEl.style.opacity = .95;
-        tipsEl.style.transform = 'translateY(0)';
-        tipIndex = (tipIndex + 1) % hints.length;
-      }, 420);
-    }
-    cycleTip();
-    setInterval(cycleTip, 6500);
-
-    /* ====== Sparkles Canvas ====== */
-    const canvas = document.getElementById('sparkles');
-    const ctx = canvas.getContext('2d');
-    let W=0,H=0, stars=[], rafId=null;
-
-    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function resize(){
-      W = canvas.width  = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-      const count = reduceMotion ? 0 : Math.min(140, Math.floor(W*H/18000));
-      stars = Array.from({length: count}, ()=>spawnStar());
-    }
-    function spawnStar(){
-      return {
-        x: Math.random()*W,
-        y: Math.random()*H,
-        r: Math.random()*1.6 + .4,
-        a: Math.random()*Math.PI*2,
-        s: Math.random()*.6 + .2,
-        tw: Math.random()*.02 + .008
-      };
-    }
-    function tick(){
-      ctx.clearRect(0,0,W,H);
-      for (const st of stars){
-        st.a += st.tw;
-        const alpha = .35 + Math.sin(st.a)*.25;
-        ctx.globalAlpha = alpha;
-        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
-        st.y -= st.s * .35;
-        st.x += Math.sin(st.a*1.6) * .12;
-        if (st.y < -5) { st.y = H+5; st.x = Math.random()*W; }
-      }
-      rafId = requestAnimationFrame(tick);
-    }
-    window.addEventListener('resize', resize);
-    resize(); if (!reduceMotion) tick();
-
-    /* ====== Аудио-кнопка (опционально) ====== */
-    const audio = document.getElementById('music');
-    const audioBtn = document.getElementById('audioBtn');
-    let audioEnabled = false;
-    function updateAudioIcon(muted){
-      document.getElementById('wave1').style.opacity = muted ? .25 : .9;
-      document.getElementById('wave2').style.opacity = muted ? .12 : .6;
-      audioBtn.style.opacity = muted ? .7 : 1;
-    }
-    audioBtn.addEventListener('click', async ()=>{
-      try{
-        if(!audioEnabled){
-          await audio.play();
-          audioEnabled = true;
-          updateAudioIcon(false);
-        }else{
-          audio.muted = !audio.muted;
-          updateAudioIcon(audio.muted);
-        }
-      }catch(e){
-        audioBtn.style.opacity = .5;
-        audioBtn.title = 'Музыка недоступна';
-      }
-    });
-
-    /* ====== Резервный мягкий прогресс ====== */
-    let bootFallback = true;
-    setTimeout(()=>{
-      if(bootFallback && percentEl.textContent === '0%'){
-        let fake = 1;
-        const id = setInterval(()=>{
-          if(percentEl.textContent !== '0%') { clearInterval(id); return; }
-          fake = Math.min(fake + Math.random()*2.5, 24);
-          setProgress(fake|0);
-          statusEl.textContent = 'Подготовка ресурсов…';
-        }, 260);
-      }
-    }, 3000);
-    // Когда движок начнёт слать проценты — отключаем фолбэк
-    const _origSetDisplayPercentage = window.SetDisplayPercentage;
-    window.SetDisplayPercentage = function(pct){ bootFallback = false; _origSetDisplayPercentage(pct); };
-
-    // Закрыть “ГОТОВО!” по клику
-    readyEl.addEventListener('click', ()=>{ readyEl.style.display='none'; });
-
-    // Чистка при reduced motion (если переключили на лету)
-    if (window.matchMedia) {
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-      mq.addEventListener?.('change', e=>{
-        if (e.matches && rafId){ cancelAnimationFrame(rafId); rafId=null; stars=[]; ctx.clearRect(0,0,W,H); }
-        if (!e.matches && !rafId){ resize(); tick(); }
-      });
-    }
-  </script>
-</body>
-</html>
+      else if (readyEl.style.d
