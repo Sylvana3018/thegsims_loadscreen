@@ -2,161 +2,405 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Loading | My GMod Server</title>
+  <title>Loading | The gSims</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Чёткая, нейтральная гарнитура -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap" rel="stylesheet">
   <style>
-    /* Подключаем Manrope с нужными весами */
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;800&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      font-family: 'Manrope', sans-serif;
-      position: relative;
-      background: url('loadscreen.jpg') center/cover no-repeat fixed;
-    }
-    #overlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 0;
+    :root{
+      --bg-1:#0cc7ff;       /* бирюза */
+      --bg-2:#1565d8;       /* синий */
+      --plumbob-1:#42ff6b;  /* верх пламбоба */
+      --plumbob-2:#00c853;  /* низ пламбоба */
+      --ring-track:rgba(255,255,255,0.18);
+      --ring-fill-1:#b7ffcc;
+      --ring-fill-2:#66ff8b;
+      --ring-fill-3:#2ee56c;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,0.75);
     }
 
-    #container {
-      position: relative; z-index: 1;
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      text-align: center; padding: 0 20px;
-      opacity: 0; animation: fadeIn 1s ease-out forwards;
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      font-family:'Manrope',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      overflow:hidden;
+      background: radial-gradient(1200px 900px at 50% 40%, var(--bg-1) 0%, var(--bg-2) 70%, #0b2b7c 100%);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Логотип — интенсивный пульс */
-    #logo {
-      width: 180px;
-      filter: invert(1) brightness(2);
-      opacity: 0.9;
-      margin-bottom: 20px;
-      animation: pulse 2s ease-in-out infinite;
-      transform-origin: center;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50%      { transform: scale(1.12); }
+    /* Тонкий блюр фоновой картинки под градиентом (опционально) */
+    #bg-photo{
+      position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.12;
+      background:url('loadscreen.jpg') center/cover no-repeat fixed;
+      filter: blur(12px) saturate(1.1);
+      transform: scale(1.03);
     }
 
-    /* Заголовок — ExtraBold */
-    #title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      margin-bottom: 40px;
-      letter-spacing: 0.05em;
-      color: #fff;
+    /* Спокойные статичные кольца — вместо “скользящих” лучей */
+    #bg-halo{
+      position:fixed; inset:0; z-index:1; pointer-events:none;
+      display:grid; place-items:center; opacity:.35;
     }
-    #title .g { color: #00c3ff; }
+    #bg-halo svg{ width:min(120vmin,1200px); height:auto; }
+    #bg-halo .c1{ stroke:rgba(255,255,255,.14); stroke-width:2; filter:url(#blur20) }
+    #bg-halo .c2{ stroke:rgba(255,255,255,.10); stroke-width:2; filter:url(#blur30) }
+    #bg-halo .c3{ stroke:rgba(255,255,255,.07); stroke-width:2; filter:url(#blur40) }
 
-    /* Прогресс-бар */
-    #progress-bar {
-      width: 60%; max-width: 500px;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    #progress-fill {
-      width: 0%; height: 100%;
-      background: #00c3ff;
-      transition: width 0.2s ease;
+    /* Канвас с лёгкими искрами */
+    #sparkles{
+      position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.6;
     }
 
-    /* Статус загрузки */
-    #status {
-      font-size: 0.9rem; font-weight: 300;
-      opacity: 0.8; min-height: 1.4em;
-      color: #fff; margin-bottom: 30px;
+    /* Контейнер контента */
+    #wrap{
+      position:relative; z-index:3;
+      height:100%; width:100%;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:6vh 24px 18vh;
+      text-align:center;
     }
 
-    /* Анимированные подсказки — ещё крупнее */
-    #tips {
-      position: absolute;
-      bottom: 50px; /* выше версии */
-      width: 100%;
-      text-align: center;
-      font-size: 1.3rem;      /* ещё больше */
-      font-weight: 300;
-      color: #ddd;
-      opacity: 0.8;
-      min-height: 1.6em;
-      transition: opacity 0.8s ease;
-      z-index: 1;
+    /* Заголовок — без бегущего блика */
+    h1#title{
+      font-weight:800; letter-spacing:.02em; font-size:min(8vw,54px);
+      text-transform:none; margin-top:18px;
+      text-shadow: 0 6px 24px rgba(0,0,0,.35);
+    }
+    h1#title .g{ color:#9fffb3 }
+
+    /* Блок пламбоба и кольца прогресса */
+    .hero{
+      position:relative;
+      display:grid;
+      place-items:center;
+      width:min(56vmin, 380px);
+      aspect-ratio:1/1;
+      filter: drop-shadow(0 30px 50px rgba(0,0,0,.45));
+      animation: heroIn .9s ease both;
+    }
+    @keyframes heroIn{ from{ transform: translateY(12px); opacity:0 } to{ transform:none; opacity:1 } }
+
+    /* SVG-кольцо */
+    .ring{ position:absolute; inset:0; }
+    .ring svg{ width:100%; height:100% }
+    .ring .track{
+      stroke: var(--ring-track);
+      stroke-width:14; fill:none;
+    }
+    .ring .progress{
+      stroke: url(#grad);
+      stroke-width:14; fill:none; stroke-linecap:round;
+      transform: rotate(-90deg);
+      transform-origin:50% 50%;
+      transition: stroke-dashoffset .2s ease;
+      filter: drop-shadow(0 0 22px rgba(98,255,140,.45));
+    }
+
+    /* Пламбоб */
+    .plumbob{
+      width:48%; aspect-ratio: 1/1; z-index:1; position:relative;
+      animation: bob 2.8s ease-in-out infinite, spin 12s linear infinite;
+      filter: drop-shadow(0 14px 24px rgba(0,0,0,.35))
+              drop-shadow(0 0 20px rgba(106,255,140,.35));
+      will-change: transform;
+    }
+    @keyframes bob{
+      0%,100%{ transform: translateY(-4%) }
+      50%{ transform: translateY(4%) }
+    }
+    @keyframes spin{
+      0%{ transform: rotateY(0deg) }
+      100%{ transform: rotateY(360deg) }
+    }
+
+    /* Процент и статус */
+    #percent{
+      margin-top:16px; font-weight:600; letter-spacing:.06em;
+      font-size: clamp(12px, 1.6vw, 14px);
+      opacity:.9;
+    }
+    #status{
+      margin-top:12px; font-weight:300;
+      font-size: clamp(13px, 1.9vw, 16px);
+      opacity:.9; min-height:1.5em;
+    }
+
+    /* Подсказки */
+    #tips{
+      position:fixed; left:0; right:0; bottom:64px;
+      text-align:center;
+      font-size: clamp(16px, 2.6vw, 22px);
+      font-weight:300; color:var(--muted);
+      opacity:.95; min-height:1.6em;
+      transition: opacity .6s ease, transform .6s ease;
+      z-index:3; padding:0 18px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.25);
     }
 
     /* Версия */
-    #version {
-      position: absolute; bottom: 15px;
-      width: 100%; text-align: center;
-      font-size: 0.75rem; opacity: 0.5;
-      font-weight: 300; color: #fff;
-      z-index: 1;
+    #version{
+      position:fixed; bottom:20px; left:0; right:0;
+      text-align:center; font-size:12px; opacity:.6; z-index:3;
     }
 
-    @keyframes fadeIn { to { opacity: 1; } }
+    /* Кнопка звука */
+    #audioBtn{
+      position:fixed; top:18px; right:18px; z-index:4;
+      width:42px; height:42px; border-radius:12px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      display:grid; place-items:center; cursor:pointer;
+      backdrop-filter: blur(8px);
+      transition: transform .12s ease, background .2s ease, opacity .2s ease;
+    }
+    #audioBtn:hover{ transform: translateY(-1px) scale(1.03); background: rgba(255,255,255,.18) }
+
+    /* Экран “Готово” при 100% */
+    #ready{
+      position:fixed; inset:0; display:none; place-items:center; z-index:5;
+      background: radial-gradient(60% 40% at 50% 40%, rgba(255,255,255,.06), rgba(0,0,0,.35));
+      color:#fff; text-shadow:0 6px 20px rgba(0,0,0,.6);
+      font-weight:800; font-size: clamp(22px, 4.5vw, 36px);
+      letter-spacing:.08em;
+      animation: readyIn .45s ease both;
+    }
+    @keyframes readyIn{ from{ opacity:0 } to{ opacity:1 } }
+
+    /* Сниженное движение — бережём FPS/доступность */
+    @media (prefers-reduced-motion: reduce){
+      .plumbob{ animation: none }
+      .hero{ animation: none }
+    }
+
+    /* Небольшая адаптация */
+    @media (max-height:640px){
+      #wrap{ padding-bottom: 20vh }
+      .plumbob{ width:44% }
+    }
   </style>
 </head>
 <body>
-  <div id="overlay"></div>
+  <div id="bg-photo" aria-hidden="true"></div>
 
-  <div id="container">
-    <img id="logo" src="logo.png" alt="Server Logo">
-    <div id="title">The <span class="g">g</span>Sims</div>
-    <div id="progress-bar"><div id="progress-fill"></div></div>
-    <div id="status">Ожидание данных от сервера…</div>
+  <!-- Статичные кольца-ореолы -->
+  <div id="bg-halo" aria-hidden="true">
+    <svg viewBox="0 0 800 800" role="img" aria-label="Halo rings">
+      <defs>
+        <filter id="blur20"><feGaussianBlur stdDeviation="20"/></filter>
+        <filter id="blur30"><feGaussianBlur stdDeviation="30"/></filter>
+        <filter id="blur40"><feGaussianBlur stdDeviation="40"/></filter>
+      </defs>
+      <circle class="c1" cx="400" cy="320" r="250" fill="none"/>
+      <circle class="c2" cx="400" cy="320" r="330" fill="none"/>
+      <circle class="c3" cx="400" cy="320" r="410" fill="none"/>
+    </svg>
+  </div>
+
+  <canvas id="sparkles" aria-hidden="true"></canvas>
+
+  <!-- Опциональная музыка: положи рядом music.mp3 -->
+  <audio id="music" src="music.mp3" preload="none" loop></audio>
+  <button id="audioBtn" title="Музыка">
+    <svg id="icon-sound" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 10h3l4-3v10l-4-3H4V10z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+      <path id="wave1" d="M16 9a3 3 0 010 6" stroke="white" stroke-width="1.6" opacity=".9"/>
+      <path id="wave2" d="M18.5 7a6 6 0 010 10" stroke="white" stroke-width="1.6" opacity=".6"/>
+    </svg>
+  </button>
+
+  <div id="wrap" role="main">
+    <div class="hero" aria-hidden="true">
+      <!-- Кольцо прогресса -->
+      <div class="ring">
+        <svg viewBox="0 0 240 240">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--ring-fill-1)"/>
+              <stop offset="50%" stop-color="var(--ring-fill-2)"/>
+              <stop offset="100%" stop-color="var(--ring-fill-3)"/>
+            </linearGradient>
+          </defs>
+          <circle class="track" cx="120" cy="120" r="96" />
+          <circle class="progress" id="ringProgress" cx="120" cy="120" r="96" stroke-dasharray="603.19" stroke-dashoffset="603.19"/>
+        </svg>
+      </div>
+
+      <!-- Пламбоб -->
+      <svg class="plumbob" viewBox="0 0 100 140" role="img" aria-label="gSims Plumbob">
+        <polygon points="50,0 90,60 50,120 10,60" fill="url(#p-grad)"/>
+        <polygon points="50,10 80,60 50,110 20,60" fill="url(#p-grad2)" opacity=".65"/>
+        <polygon points="10,60 35,60 50,120" fill="rgba(255,255,255,.25)" opacity=".22"/>
+        <defs>
+          <linearGradient id="p-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="var(--plumbob-1)"/>
+            <stop offset="100%" stop-color="var(--plumbob-2)"/>
+          </linearGradient>
+          <linearGradient id="p-grad2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="rgba(255,255,255,.85)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <h1 id="title" aria-live="polite">The <span class="g">g</span>Sims</h1>
+    <div id="percent" aria-live="polite">0%</div>
+    <div id="status" aria-live="polite">Инициализация…</div>
   </div>
 
   <div id="tips"></div>
-  <div id="version">alpha ver. 0.8.2</div>
+  <div id="version">alpha ver. 0.8.2 • gSims | Nyx Project</div>
+
+  <div id="ready">ГОТОВО!</div>
 
   <script>
-    const fill   = document.getElementById('progress-fill');
-    const status = document.getElementById('status');
-    const tips   = document.getElementById('tips');
+    /* ====== DOM ====== */
+    const ring = document.getElementById('ringProgress');
+    const percentEl = document.getElementById('percent');
+    const statusEl  = document.getElementById('status');
+    const tipsEl    = document.getElementById('tips');
+    const readyEl   = document.getElementById('ready');
 
-    // GMod вызывает эти функции
-    window.SetDisplayPercentage = pct => {
-      const v = Math.max(0, Math.min(100, pct));
-      fill.style.width = v + '%';
-    };
-    window.SetStatusChanged = txt => { status.textContent = txt; };
+    /* ====== Прогресс-кольцо ====== */
+    const R = 96;
+    const CIRC = 2 * Math.PI * R;
+    ring.setAttribute('stroke-dasharray', CIRC.toFixed(2));
+    ring.setAttribute('stroke-dashoffset', CIRC.toFixed(2));
 
-    // Список подсказок
-    const hints = [
-      'А вы знали, что мебель сохранится в ваших апартаментах даже если вы выйдете с сервера?',
-      'Развивайте собственный бизнес - от интерьера до популярности',
-      'Более 80% механик мы сделали с нуля специально для The gSims',
-      'А вы знали, что можете обустраивать интерьер в специальном режиме Дизайнера?',
-      'Ежемесячные крупные обновления с целыми наборами нового контента',
-      'Мы считаем себя духовными наследниками БизнесРП'
-    ];
-    let idx = 0;
-    function showTip() {
-      tips.style.opacity = 0;
-      setTimeout(() => {
-        tips.textContent = hints[idx];
-        tips.style.opacity = 0.8;
-        idx = (idx + 1) % hints.length;
-      }, 800);
+    function setProgress(p){
+      const v = Math.max(0, Math.min(100, p|0));
+      const offset = CIRC * (1 - v/100);
+      ring.style.strokeDashoffset = offset.toFixed(2);
+      percentEl.textContent = v + '%';
+      if (v >= 100) readyEl.style.display = 'grid';
+      else if (readyEl.style.display !== 'none') readyEl.style.display = 'none';
     }
-    showTip();
-    setInterval(showTip, 8000);
 
-    // Резервное сообщение
-    setTimeout(() => {
-      if (fill.style.width === '0%') {
-        status.textContent = 'Идёт загрузка, пожалуйста, подождите…';
+    /* ====== Хуки GMod (имена не меняем) ====== */
+    window.SetDisplayPercentage = function(pct){
+      setProgress(pct);
+    };
+    window.SetStatusChanged = function(txt){
+      statusEl.textContent = txt || '';
+    };
+
+    /* ====== Подсказки ====== */
+    const hints = [
+      'Совет: мебель в ваших апартаментах сохраняется даже после выхода.',
+      'Подсказка: развивайте собственный бизнес — от интерьера до популярности.',
+      'Факт: более 80% механик сделаны вручную специально для The gSims.',
+      'Знаете ли вы? Есть режим Дизайнера для продвинутого обустройства.',
+      'Каждый месяц — крупные обновления с наборами нового контента.',
+      'Мы — духовные наследники БизнесРП. Присоединяйтесь к сообществу!'
+    ];
+    let tipIndex = 0;
+    function cycleTip(){
+      tipsEl.style.opacity = 0;
+      tipsEl.style.transform = 'translateY(6px)';
+      setTimeout(()=>{
+        tipsEl.textContent = hints[tipIndex];
+        tipsEl.style.opacity = .95;
+        tipsEl.style.transform = 'translateY(0)';
+        tipIndex = (tipIndex + 1) % hints.length;
+      }, 420);
+    }
+    cycleTip();
+    setInterval(cycleTip, 6500);
+
+    /* ====== Sparkles Canvas ====== */
+    const canvas = document.getElementById('sparkles');
+    const ctx = canvas.getContext('2d');
+    let W=0,H=0, stars=[], rafId=null;
+
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function resize(){
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      const count = reduceMotion ? 0 : Math.min(140, Math.floor(W*H/18000));
+      stars = Array.from({length: count}, ()=>spawnStar());
+    }
+    function spawnStar(){
+      return {
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: Math.random()*1.6 + .4,
+        a: Math.random()*Math.PI*2,
+        s: Math.random()*.6 + .2,
+        tw: Math.random()*.02 + .008
+      };
+    }
+    function tick(){
+      ctx.clearRect(0,0,W,H);
+      for (const st of stars){
+        st.a += st.tw;
+        const alpha = .35 + Math.sin(st.a)*.25;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+        st.y -= st.s * .35;
+        st.x += Math.sin(st.a*1.6) * .12;
+        if (st.y < -5) { st.y = H+5; st.x = Math.random()*W; }
       }
-    }, 8000);
+      rafId = requestAnimationFrame(tick);
+    }
+    window.addEventListener('resize', resize);
+    resize(); if (!reduceMotion) tick();
+
+    /* ====== Аудио-кнопка (опционально) ====== */
+    const audio = document.getElementById('music');
+    const audioBtn = document.getElementById('audioBtn');
+    let audioEnabled = false;
+    function updateAudioIcon(muted){
+      document.getElementById('wave1').style.opacity = muted ? .25 : .9;
+      document.getElementById('wave2').style.opacity = muted ? .12 : .6;
+      audioBtn.style.opacity = muted ? .7 : 1;
+    }
+    audioBtn.addEventListener('click', async ()=>{
+      try{
+        if(!audioEnabled){
+          await audio.play();
+          audioEnabled = true;
+          updateAudioIcon(false);
+        }else{
+          audio.muted = !audio.muted;
+          updateAudioIcon(audio.muted);
+        }
+      }catch(e){
+        audioBtn.style.opacity = .5;
+        audioBtn.title = 'Музыка недоступна';
+      }
+    });
+
+    /* ====== Резервный мягкий прогресс ====== */
+    let bootFallback = true;
+    setTimeout(()=>{
+      if(bootFallback && percentEl.textContent === '0%'){
+        let fake = 1;
+        const id = setInterval(()=>{
+          if(percentEl.textContent !== '0%') { clearInterval(id); return; }
+          fake = Math.min(fake + Math.random()*2.5, 24);
+          setProgress(fake|0);
+          statusEl.textContent = 'Подготовка ресурсов…';
+        }, 260);
+      }
+    }, 3000);
+    // Когда движок начнёт слать проценты — отключаем фолбэк
+    const _origSetDisplayPercentage = window.SetDisplayPercentage;
+    window.SetDisplayPercentage = function(pct){ bootFallback = false; _origSetDisplayPercentage(pct); };
+
+    // Закрыть “ГОТОВО!” по клику
+    readyEl.addEventListener('click', ()=>{ readyEl.style.display='none'; });
+
+    // Чистка при reduced motion (если переключили на лету)
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+      mq.addEventListener?.('change', e=>{
+        if (e.matches && rafId){ cancelAnimationFrame(rafId); rafId=null; stars=[]; ctx.clearRect(0,0,W,H); }
+        if (!e.matches && !rafId){ resize(); tick(); }
+      });
+    }
   </script>
 </body>
 </html>
